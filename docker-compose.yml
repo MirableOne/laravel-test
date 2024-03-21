@@ -1,0 +1,65 @@
+version: '3'
+
+services:
+    reverse-proxy:
+        image: traefik:v1.7
+        command: --api --docker
+        ports:
+            - "80:80"
+            - "443:443"
+            - "8080:8080"
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        networks:
+            - laravel
+
+    nginx:
+        image: nginx:stable
+        networks:
+            - laravel
+        volumes:
+            - ./docker/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+            - .:/var/www/html
+        working_dir: /etc/nginx/conf.d
+        labels:
+            - "traefik.backend=laravel-test"
+            - "traefik.frontend.rule=Host:laravel-test.docker.localhost"
+            - "traefik.docker.network=laravel"
+            - "traefik.port=80"
+
+    phpfpm:
+        build:
+            context: ./docker/phpfpm
+        depends_on:
+            - database
+        env_file:
+            - .env
+        expose:
+            - 9000
+        networks:
+            - laravel
+        volumes:
+            - .:/var/www/html
+        working_dir: /var/www/html
+
+    database:
+        image: postgres:16.2
+        networks:
+            - laravel
+        ports:
+            - 5432:5432
+        environment:
+            POSTGRES_USER: root
+            POSTGRES_PASSWORD: root
+            POSTGRES_DB: test
+        volumes:
+            - ./docker/database:/docker-entrypoint-initdb.d/
+            - database-volume:/var/lib/postgresql/data
+
+networks:
+    laravel:
+        driver: bridge
+
+volumes:
+    database-volume:
+        driver: local
