@@ -56,6 +56,19 @@ services:
             - ./docker/database:/docker-entrypoint-initdb.d/
             - database-volume:/var/lib/postgresql/data
 
+    build:
+        build:
+            context: ./docker/build/
+        profiles:
+            - build
+        working_dir: /var/www/html
+        volumes:
+            - .:/var/www/html
+        env_file:
+            - .env
+        networks:
+            - laravel
+
 networks:
     laravel:
         driver: bridge

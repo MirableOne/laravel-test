@@ -1,7 +1,7 @@
 migrate:
-	DB_HOST=localhost php artisan migrate
+	docker-compose build build && docker-compose run build php artisan migrate
 
 seed:
-	DB_HOST=localhost php artisan db:seed --class=DatabaseSeeder
+	docker-compose build build && docker-compose run build php artisan db:seed --class=DatabaseSeeder
 
 .PHONY: migrate seed
