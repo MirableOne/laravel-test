@@ -1,6 +1,12 @@
 
 ### Setup
 
+Build:
+
+```shell
+docker-compose up build
+```
+
 Start:
 
 ```shell
